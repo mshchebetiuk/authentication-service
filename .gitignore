@@ -1,0 +1,20 @@
+node_modules/
+dist/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Generated Prisma Client
+/src/generated/prisma/
+
+# Prisma/AI generated skills
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
+# Logs
+*.log
+.DS_Store

@@ -45,11 +45,12 @@ export const login = async (req: Request, res: Response) => {
     });
 
   try {
-    const user = await loginUser(result.data);
+    const { user, accessToken } = await loginUser(result.data);
 
     return res.status(200).json({
       message: "Login successful",
       user,
+      accessToken,
     });
   } catch (error) {
     if (

@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 
 import { prisma } from "../config/prisma.js";
-import type { RegisterInput } from "../schemas/authSchema.js";
+import type { LoginInput, RegisterInput } from "../schemas/authSchema.js";
 
 export const registerUser = async (input: RegisterInput) => {
   const { email, password, name } = input;
@@ -31,4 +31,26 @@ export const registerUser = async (input: RegisterInput) => {
   });
 
   return user;
+};
+
+export const loginUser = async (input: LoginInput) => {
+  const { email, password } = input;
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) throw new Error("Invalid email or password");
+
+  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+  if (!isPasswordValid) throw new Error("Invalid email or password");
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  };
 };

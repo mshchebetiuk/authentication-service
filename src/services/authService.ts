@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../config/prisma.js";
 import type { LoginInput, RegisterInput } from "../schemas/authSchema.js";
 import { createAccessToken } from "../utils/jwt.js";
+import { createRefreshToken } from "./refreshTokenService.js";
 
 export const registerUser = async (input: RegisterInput) => {
   const { email, password, name } = input;
@@ -50,6 +51,7 @@ export const loginUser = async (input: LoginInput) => {
   if (!isPasswordValid) throw new Error("Invalid email or password");
 
   const accessToken = createAccessToken(user.id);
+  const refreshToken = await createRefreshToken(user.id);
 
   return {
     user: {
@@ -58,5 +60,6 @@ export const loginUser = async (input: LoginInput) => {
       name: user.name,
     },
     accessToken,
+    refreshToken,
   };
 };

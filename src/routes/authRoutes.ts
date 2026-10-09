@@ -7,9 +7,11 @@ import {
   logout,
 } from "../controllers/authController.js";
 
+import { authLimiter } from "../middlewares/rateLimiter.js";
+
 export const authRouter: ExpressRouter = Router();
 
-authRouter.post("/register", register);
-authRouter.post("/login", login);
+authRouter.post("/register", authLimiter, register);
+authRouter.post("/login", authLimiter, login);
 authRouter.post("/refresh", refresh);
 authRouter.post("/logout", logout);

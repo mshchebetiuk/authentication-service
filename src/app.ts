@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import helmet from "helmet";
 
 import { authRouter } from "./routes/authRoutes.js";
 import { healthRouter } from "./routes/healthRoutes.js";
@@ -9,6 +10,7 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 
 export const app: Express = express();
 
+app.use(helmet());
 app.use(express.json());
 
 app.use("/health", healthRouter);

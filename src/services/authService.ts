@@ -4,6 +4,7 @@ import { prisma } from "../config/prisma.js";
 import type { LoginInput, RegisterInput } from "../schemas/authSchema.js";
 import { createAccessToken } from "../utils/jwt.js";
 import { createRefreshToken } from "./refreshTokenService.js";
+import { AppError } from "../errors/AppError.js";
 
 export const registerUser = async (input: RegisterInput) => {
   const { email, password, name } = input;
@@ -14,7 +15,8 @@ export const registerUser = async (input: RegisterInput) => {
     },
   });
 
-  if (existingUser) throw new Error("User with this email already exists");
+  if (existingUser)
+    throw new AppError(409, "User with this email already exists");
 
   const passwordHash = await bcrypt.hash(password, 12);
 
@@ -44,11 +46,11 @@ export const loginUser = async (input: LoginInput) => {
     },
   });
 
-  if (!user) throw new Error("Invalid email or password");
+  if (!user) throw new AppError(401, "Invalid email or password");
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
-  if (!isPasswordValid) throw new Error("Invalid email or password");
+  if (!isPasswordValid) throw new AppError(401, "Invalid email or password");
 
   const accessToken = createAccessToken(user.id);
   const refreshToken = await createRefreshToken(user.id);

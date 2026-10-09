@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 
 import { prisma } from "../config/prisma.js";
 import { createAccessToken } from "../utils/jwt.js";
+import { AppError } from "../errors/AppError.js";
 
 const REFRESH_TOKEN_DAYS = 7;
 
@@ -36,7 +37,7 @@ export const rotateRefreshToken = async (token: string) => {
     });
 
     if (!storedToken || storedToken.expiresAt <= new Date()) {
-      throw new Error("Invalid or expired refresh token");
+      throw new AppError(401, "Invalid or expired refresh token");
     }
 
     const deleted = await tx.refreshToken.deleteMany({
@@ -47,7 +48,7 @@ export const rotateRefreshToken = async (token: string) => {
     });
 
     if (deleted.count !== 1) {
-      throw new Error("Invalid or expired refresh token");
+      throw new AppError(401, "Invalid or expired refresh token");
     }
 
     const newRefreshToken = randomBytes(32).toString("hex");

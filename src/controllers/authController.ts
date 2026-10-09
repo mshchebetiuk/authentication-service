@@ -10,6 +10,7 @@ import {
   rotateRefreshToken,
   revokeRefreshToken,
 } from "../services/refreshTokenService.js";
+import { AppError } from "../errors/AppError.js";
 
 export const register = async (req: Request, res: Response) => {
   const result = registerSchema.safeParse(req.body);
@@ -28,18 +29,11 @@ export const register = async (req: Request, res: Response) => {
       user,
     });
   } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === "User with this email already exists"
-    ) {
-      return res.status(409).json({
-        error: error.message,
-      });
+    if (error instanceof AppError) {
+      throw error;
     }
 
-    return res.status(500).json({
-      error: "Internal server error",
-    });
+    throw error;
   }
 };
 
@@ -62,18 +56,11 @@ export const login = async (req: Request, res: Response) => {
       refreshToken,
     });
   } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === "Invalid email or password"
-    ) {
-      return res.status(401).json({
-        error: error.message,
-      });
+    if (error instanceof AppError) {
+      throw error;
     }
 
-    return res.status(500).json({
-      error: "Internal server error",
-    });
+    throw error;
   }
 };
 
@@ -86,28 +73,12 @@ export const refresh = async (req: Request, res: Response) => {
       details: result.error.flatten(),
     });
 
-  try {
-    const tokens = await rotateRefreshToken(result.data.refreshToken);
+  const tokens = await rotateRefreshToken(result.data.refreshToken);
 
-    return res.status(200).json({
-      message: "Tokens refreshed successfully",
-      ...tokens,
-    });
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === "Invalid or expired refresh token"
-    ) {
-      return res.status(401).json({
-        error: error.message,
-      });
-    }
-
-    console.error("Refresh token error:", error);
-    return res.status(500).json({
-      error: "Internal server error",
-    });
-  }
+  return res.status(200).json({
+    message: "Tokens refreshed successfully",
+    ...tokens,
+  });
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -119,17 +90,9 @@ export const logout = async (req: Request, res: Response) => {
       details: result.error.flatten(),
     });
 
-  try {
-    await revokeRefreshToken(result.data.refreshToken);
+  await revokeRefreshToken(result.data.refreshToken);
 
-    return res.status(200).json({
-      message: "Logged out successfully",
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-
-    return res.status(500).json({
-      error: "Internal server error",
-    });
-  }
+  return res.status(200).json({
+    message: "Logged out successfully",
+  });
 };

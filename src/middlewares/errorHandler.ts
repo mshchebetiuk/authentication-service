@@ -9,6 +9,17 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "type" in error &&
+    error.type === "entity.parse.failed"
+  ) {
+    return res.status(400).json({
+      error: "Malformed JSON request body",
+    });
+  }
+
   if (error instanceof AppError) {
     return res.status(error.statusCode).json({
       error: error.message,

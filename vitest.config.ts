@@ -2,14 +2,16 @@ import { defineConfig } from "vitest/config";
 import { config } from "dotenv";
 
 export default defineConfig(() => {
-  const result = config({
-    path: ".env.test",
-    override: true,
-    quiet: true,
-  });
+  if (!process.env.CI) {
+    const result = config({
+      path: ".env.test",
+      override: true,
+      quiet: true,
+    });
 
-  if (result.error) {
-    throw new Error("Failed to loav .env.test");
+    if (result.error) {
+      throw new Error("Failed to loav .env.test");
+    }
   }
 
   const databaseUrl = process.env.DATABASE_URL;
@@ -28,6 +30,8 @@ export default defineConfig(() => {
     test: {
       environment: "node",
       fileParallelism: false,
+      include: ["src/tests/**/*.test.ts"],
+      exclude: ["**/node_modules/**", "**/dist/**"],
     },
   };
 });
